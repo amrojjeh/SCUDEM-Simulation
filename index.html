@@ -19,6 +19,7 @@ Why do birds cover their eggs? Three hypotheses
 <body>
 	<canvas id="myChart"></canvas>
 	<button id="next">Next month</button>
+	<button id="change">Toggle Plucking</button>
 	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js@3.6.0/dist/chart.min.js"></script>
 	<script type="text/javascript">
 		let times = [];
@@ -28,6 +29,7 @@ Why do birds cover their eggs? Three hypotheses
 			temperature: 24, // in C
 			birdPluckRate: 0.2,
 			pluckToTemp: 2.4, // Also, Loukola et al. (2014) found that, in Finland, great tits had 54.5% (0.5 g) more hair on the eggs in Oulu than in Turku. Oulu (latitude 65°) is located over 600 km north of Turku (latitude 60°) and the mean daily spring temperature was 2.4°C cooler (in years 1981–2010) in Oulu (Pirinen et al., 2012).
+			plucking: true,
 		};
 
 		function Bird(bird) {
@@ -35,7 +37,7 @@ Why do birds cover their eggs? Three hypotheses
 				// 1 = January, 0 = December
 				let month = times.length % 12;
 				// March - June
-				if (3 <= month && month <= 6 && !this.hasDied && meta.temperature + this.plucked * meta.pluckToTemp > 27) {
+				if (3 <= month && month <= 6 && !this.hasDied && (!meta.plucking || meta.temperature + this.plucked * meta.pluckToTemp > 27)) {
 					if (!this.hasLaid)
 						this.layChance = 1 / 3;
 					else
@@ -61,7 +63,7 @@ Why do birds cover their eggs? Three hypotheses
 				this.hasDied = false;
 				this.clutchSize = 6;
 				this.plucked = 0; // 100% = 0.5g = 2.4 C
-				this.pluckRate = .5;
+				this.pluckRate = meta.plucking ? .5 : 0;
 			}
 		}
 
@@ -123,7 +125,6 @@ Why do birds cover their eggs? Three hypotheses
 
 		function doesBirdPluck(bird) {
 			bird.plucked += bird.pluckRate;
-			console.log(bird.plucked)
 		}
 
 		function doesEggHatch(egg, availableSpace) {
@@ -235,6 +236,18 @@ Why do birds cover their eggs? Three hypotheses
 		}
 
 		document.getElementById("next").addEventListener("click", updateGraph);
+
+		document.getElementById("change").addEventListener("click", function() {
+			meta.plucking = !meta.plucking;
+			times = [];
+			nextLabel.prev = undefined;
+			myChart.options.plugins.title.text = meta.plucking ? "Bird Population (PLUCKING)" : "Bird Population (NO PLUCKING)";
+			myChart.data.labels = []
+			myChart.data.datasets = []
+			updateGraph();
+			myChart.options
+
+		});
 
 	</script>
 </body>
